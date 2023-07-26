@@ -1,4 +1,4 @@
-import { useEffect,useRef, useState} from 'react';
+import { useEffect,useRef} from 'react';
 import { ListItem } from './ListItem';
 import { Popup } from './Popup';
 import { add_chars } from '../store/slice';
@@ -8,67 +8,51 @@ import './App.sass'
 
 function App() {
 
+	const data = useSelector(store => store.default.chars)
+	const page = useSelector(store => store.default.page)
+  const bottomRef = useRef(null)
+  const headerRef = useRef(null)
 	const dispatch = useDispatch()
-	//const data = useSelector(store => store.default.chars)
-	const ref = useRef(null);
-	const [data, setData] = useState([])
-
 
 	
-	useEffect(()=>{
-
-		(async function(){
-		
-			const response = await fetch('https://rickandmortyapi.com/api/character')
+	
+	const cb = async (entries) => {
+    if (entries[0].isIntersecting) {
+			const response = await fetch(`https://rickandmortyapi.com/api/character/?page=${page}`)
 			const data = await response.json()
-			//dispatch(add_chars(data))
-			
-			setData(data.results)
-			//obs(setData,data,ref)
-			
-
-		}())
-	
-	},[ref]);
-
-
+			dispatch(add_chars(data))
+    }
+  }; 
+  
+  useEffect(() => {
+		const { current } = bottomRef;
+		const options = {
+			root: null,
+      threshold: 1,
+		}
+    const observer = new IntersectionObserver(cb, options);
+    observer.observe(current);
+		
+		return () => observer.disconnect(current);
+  });
 
 	return (
 		<>
-			<header>header</header>
+			<header ref={headerRef}>
+					<span className="ttop"
+						onClick={()=>window.scrollTo({top: 0, behavior: 'smooth'})}>
+						↑ to top
+					</span>
+			</header>
+
 			<Popup />
-			<ul className="list" ref={ref}>
+
+			<ul className="list">
 				{data && data.map(item => <ListItem item={item} key={item.id}/> )}
 			</ul>
+			<div ref={bottomRef} />
 		</>
 	);
 }
 
 export default App;
-
-
-function obs(setData, data,ref){
-	if(!ref.current) return
-	
-
-	
-	const options = {
-		root: null,
-		rootMargin: '0px',
-		threshold: 0.5
-	}
-
-	const callback = entries =>{
-		const [entry] = entries
-		console.log(entry.isIntersecting)
-
-		entry.isIntersecting && setData(data.results)
-	}
-	
-	const observer = new IntersectionObserver(callback, options)
-	observer.observe(ref.current)
-
-}
-
-// https://stackoverflow.com/questions/65806186/intersectionobserver-inside-useeffect-works-only-once
-

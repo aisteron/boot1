@@ -6,11 +6,23 @@ html
 body
 	margin: 1rem auto
 	width: 800px
+	@media(max-width:800px)
+		width: 100%
 
 header
 	background-color: #eee
 	margin-bottom: 1rem
 	padding: 1rem
+	position: sticky
+	width: 800px
+	top: 0
+	@media(max-width:800px)
+		width: 100%
+	.ttop
+		cursor: pointer
+		&:hover
+			color: red
+
 ul
 	padding: 1rem
 	margin: 0
@@ -20,7 +32,8 @@ ul
 		display: grid
 		grid-template-columns: 300px 300px
 		gap: 1rem
-		min-height: 200vh
+		@media(max-width:665px)
+			grid-template-columns: 1fr
 		li
 			width: 300px
 		figure
